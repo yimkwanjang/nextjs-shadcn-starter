@@ -1,8 +1,11 @@
-import { Blocks, Palette, Sparkles, Type } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Blocks, LogIn, Palette, Sparkles, Type } from "lucide-react";
 
 import { DemoSection } from "@/components/demo-section";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const stack = [
   { icon: Blocks, label: "Next.js 15", desc: "App Router" },
@@ -28,6 +31,19 @@ export default function Home() {
             프로덕션에 바로 투입 가능한 모던 웹 스택. 설정은 끝났으니 기능 구현에만
             집중하세요.
           </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/dashboard" className={cn(buttonVariants(), "gap-1.5")}>
+              대시보드 데모
+              <ArrowRight className="size-4" />
+            </Link>
+            <Link
+              href="/login"
+              className={cn(buttonVariants({ variant: "outline" }), "gap-1.5")}
+            >
+              <LogIn className="size-4" />
+              로그인 화면
+            </Link>
+          </div>
         </section>
 
         {/* 기술 스택 */}
