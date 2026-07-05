@@ -32,6 +32,7 @@ npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog,
 | TailwindCSS | v4 | `tailwind.config` **파일 없음** — PostCSS 플러그인 방식 |
 | shadcn/ui | base-nova (Base UI 기반, **Radix 아님**) | 아이콘 lucide-react |
 | next-themes | 0.4 | 다크모드 class 전략 |
+| 공통 훅 | usehooks-ts 3.1 · use-local-storage-state 19 | `useMediaQuery`·`useLocalStorage` 등 직접 구현 금지(↓ 정책) |
 
 > 최초 요청은 Next.js v15였으나 최신 공식 툴체인(create-next-app / shadcn)이 Next 16 + Base UI를
 > 전제로 동작해, 사용자 확인 후 **16으로 확정**했다. 15로 되돌리면 ESLint flat config가 깨진다.
@@ -56,10 +57,26 @@ npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog,
   `theme-toggle.tsx`는 `useEffect`/mounted 플래그 없이 CSS로 아이콘을 전환한다
   (해당 패턴이 Next 16 `react-hooks` 린트 규칙도 통과시킴).
 
+- **레이아웃은 라우트 그룹으로 셸을 나눈다.** `src/app/(app)/`와 `src/app/(auth)/`는
+  URL에 영향을 주지 않는 그룹이며 각자 `layout.tsx`로 셸을 정의한다:
+  - `(app)/layout.tsx` = 대시보드 앱 셸(사이드바+헤더+푸터). `/dashboard`·`/settings`가 공유.
+  - `(auth)/layout.tsx` = 중앙 정렬 인증 셸. `/login`이 사용.
+  - 랜딩(`/`)은 두 그룹 어디에도 속하지 않고 자체 `SiteHeader`를 쓴다.
+  셸의 재사용 조각은 `src/components/layout/`에 있다(단일 진실원본 `nav-config.ts` →
+  `nav-links.tsx`가 `usePathname`으로 활성 강조 / `mobile-nav.tsx`는 md 미만에서 Sheet 드로어 /
+  `app-header.tsx`가 경로 기반 동적 브레드크럼). 반응형 전환은 CSS(`hidden md:flex`,
+  `md:hidden`)로 처리하며 JS 미디어쿼리에 의존하지 않는다.
+
+- **공통 훅은 직접 구현하지 말고 설치된 라이브러리를 쓴다.** `useMediaQuery`는 `usehooks-ts`,
+  로컬스토리지 상태는 `use-local-storage-state`(탭 간 동기화·SSR 안전)를 사용한다.
+  더 나은 대안이 없는 한 이 둘을 우선하고, 손수 훅을 작성하지 않는다.
+
 - **경로 alias `@/*` → `src/*`** (`tsconfig.json`). import는 상대경로 대신 alias를 쓴다.
 
 ## 클라이언트/서버 컴포넌트 경계
 
-`src/app/*`는 기본 서버 컴포넌트다. 상호작용(상태·이벤트·`useTheme` 등)이 필요한 파일만
-상단에 `"use client"`를 붙인다(예: `theme-provider`, `theme-toggle`, `demo-section`).
-서버 컴포넌트인 `page.tsx`는 클라이언트 데모 컴포넌트를 import해 조합한다.
+`src/app/*`는 기본 서버 컴포넌트다. 상호작용(상태·이벤트·`useTheme`·`usePathname` 등)이
+필요한 파일만 상단에 `"use client"`를 붙인다(예: `theme-toggle`, `nav-links`, `mobile-nav`,
+`user-menu`, `app-header`, `settings-form`, `overview-tabs`). 서버 컴포넌트인 페이지(`dashboard`,
+`settings` 등)는 이 클라이언트 조각을 import해 조합한다. 라우트 그룹의 `layout.tsx`도
+서버 컴포넌트이며 클라이언트 셸 조각을 조합만 한다.
