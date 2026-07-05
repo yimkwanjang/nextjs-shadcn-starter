@@ -1,60 +1,65 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 @AGENTS.md
 
-# CLAUDE.md — Next.js Starter Kit
+> ⚠️ 위 `@AGENTS.md`가 지시하듯 이 프로젝트의 Next.js는 학습 데이터와 다를 수 있다.
+> Next.js API를 쓰기 전 `node_modules/next/dist/docs/`의 해당 가이드를 먼저 확인한다.
 
-웹 개발을 빠르게 시작하기 위한 스타터 킷. 모든 스택은 **공식문서 최신 설치 가이드**를 준수한다.
-(Next.js 공식 코딩 규칙은 위 `@AGENTS.md` 참조)
+웹 개발을 빠르게 시작하기 위한 스타터 킷. 모든 스택은 각 공식문서의 최신 설치 가이드를 준수한다.
 
-## 기술 스택 (공식문서 준수 검증 완료)
-
-| 스택 | 버전 | 공식 가이드 준수 사항 |
-|------|------|----------------------|
-| Next.js | 16.2.10 (App Router, Turbopack 기본) | `create-next-app@latest` 기본값 |
-| React | 19.2 | Next 16 내장 |
-| TypeScript | 5.x | Next 내장, `src/` + `@/*` alias |
-| TailwindCSS | v4 | `@tailwindcss/postcss` + `@import "tailwindcss"`, **config 파일 없음** |
-| shadcn/ui | base-nova 스타일 (Base UI 기반) | `shadcn@latest`, 아이콘 lucide |
-| lucide-react | 1.x | shadcn 기본 아이콘 |
-| next-themes | 0.4 | 다크모드(class 전략) |
-
-> 참고: 최초 요청은 Next.js v15였으나, 공식 툴체인(create-next-app / shadcn 최신)이
-> Next 16 + Base UI를 전제로 동작하여 마찰이 발생 → 사용자 확인 후 **16으로 확정**.
-
-## 실행 방법
+## 명령어
 
 ```bash
 npm run dev     # 개발 서버 (http://localhost:3000, Turbopack)
-npm run build   # 프로덕션 빌드 (+ 타입체크)
+npm run build   # 프로덕션 빌드 — 컴파일 + 타입체크를 함께 수행(별도 tsc 스크립트 없음)
 npm run start   # 프로덕션 서버
 npm run lint    # ESLint (flat config)
+
+npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog, tabs, table)
 ```
 
-## 코드 구조
+- 테스트 러너는 아직 없다. 타입 안전성 검증은 `npm run build`로 한다.
+- 변경 검증 시 `.next` 캐시를 지우고 빌드하면 오탐을 줄일 수 있다: `rm -rf .next && npm run build`.
 
-```
-src/
-├─ app/
-│  ├─ layout.tsx        # ThemeProvider + Toaster 루트 레이아웃
-│  ├─ page.tsx          # 데모 랜딩 페이지
-│  └─ globals.css       # Tailwind v4 진입점 (@import "tailwindcss")
-├─ components/
-│  ├─ ui/               # shadcn 컴포넌트 (button, card, input, ...)
-│  ├─ theme-provider.tsx
-│  ├─ theme-toggle.tsx  # CSS(.dark) 기반 아이콘 전환 (effect 불필요)
-│  ├─ site-header.tsx
-│  └─ demo-section.tsx  # 컴포넌트 인터랙티브 데모
-└─ lib/utils.ts         # cn() 헬퍼
-```
+## 스택 버전 (버전 의존 동작이 있으므로 고정)
 
-## 컴포넌트 추가
+| 스택 | 버전 | 비고 |
+|------|------|------|
+| Next.js | 16.2.10 (App Router, Turbopack 기본) | `create-next-app@latest` 기본값 |
+| React | 19.2 | Next 16 내장 |
+| TailwindCSS | v4 | `tailwind.config` **파일 없음** — PostCSS 플러그인 방식 |
+| shadcn/ui | base-nova (Base UI 기반, **Radix 아님**) | 아이콘 lucide-react |
+| next-themes | 0.4 | 다크모드 class 전략 |
 
-```bash
-npx shadcn@latest add <컴포넌트명>   # 예: dialog, tabs, table
-```
+> 최초 요청은 Next.js v15였으나 최신 공식 툴체인(create-next-app / shadcn)이 Next 16 + Base UI를
+> 전제로 동작해, 사용자 확인 후 **16으로 확정**했다. 15로 되돌리면 ESLint flat config가 깨진다.
 
-## 주의사항 (Base UI 특성)
+## 아키텍처에서 먼저 알아야 할 것
 
-- 현재 shadcn 기본 프리미티브는 **Radix가 아니라 Base UI**(`@base-ui/react`)다.
-- 다른 요소로 합성할 때 Radix의 `asChild` 대신 **`render` prop**을 쓴다.
-  - 예: `<DropdownMenuTrigger render={<Button variant="outline" />}>메뉴</DropdownMenuTrigger>`
-- `tailwind.config` 파일은 만들지 않는다. 테마 토큰은 `globals.css`의 `@theme`에 정의.
+여러 파일을 읽어야 파악되는 "큰 그림"과 함정만 정리한다.
+
+- **Tailwind v4 = 설정 파일이 없다.** `src/app/globals.css`가 진입점이며(`@import "tailwindcss"`),
+  테마 토큰(색상·폰트 등)은 그 안의 `@theme` 블록에 CSS 변수로 정의한다.
+  `tailwind.config.{js,ts}`를 만들지 말 것 — Tailwind가 무시하거나 혼란을 준다.
+
+- **shadcn 프리미티브는 Radix가 아니라 Base UI(`@base-ui/react`)다.** 이 차이가 실제 코드를 바꾼다:
+  트리거를 다른 컴포넌트로 합성할 때 Radix의 `asChild`가 **없다**. 대신 `render` prop을 쓴다.
+  - 올바름: `<DropdownMenuTrigger render={<Button variant="outline" />}>메뉴</DropdownMenuTrigger>`
+  - 틀림(빌드 타입 오류): `<DropdownMenuTrigger asChild><Button>메뉴</Button></DropdownMenuTrigger>`
+  새 컴포넌트는 `npx shadcn@latest add`로 받아 `src/components/ui/`에 두고 API를 확인한 뒤 쓴다.
+
+- **테마 시스템은 세 곳이 맞물린다.** `src/app/layout.tsx`가 (1) `<html>`에
+  `suppressHydrationWarning`을 두고, (2) `ThemeProvider`(`attribute="class"`, `defaultTheme="system"`)로
+  전체를 감싸고, (3) `Toaster`(sonner)를 렌더한다. `.dark` 클래스 기반이라
+  `theme-toggle.tsx`는 `useEffect`/mounted 플래그 없이 CSS로 아이콘을 전환한다
+  (해당 패턴이 Next 16 `react-hooks` 린트 규칙도 통과시킴).
+
+- **경로 alias `@/*` → `src/*`** (`tsconfig.json`). import는 상대경로 대신 alias를 쓴다.
+
+## 클라이언트/서버 컴포넌트 경계
+
+`src/app/*`는 기본 서버 컴포넌트다. 상호작용(상태·이벤트·`useTheme` 등)이 필요한 파일만
+상단에 `"use client"`를 붙인다(예: `theme-provider`, `theme-toggle`, `demo-section`).
+서버 컴포넌트인 `page.tsx`는 클라이언트 데모 컴포넌트를 import해 조합한다.
