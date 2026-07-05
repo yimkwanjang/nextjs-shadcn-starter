@@ -22,6 +22,9 @@ npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog,
 
 - 테스트 러너는 아직 없다. 타입 안전성 검증은 `npm run build`로 한다.
 - 변경 검증 시 `.next` 캐시를 지우고 빌드하면 오탐을 줄일 수 있다: `rm -rf .next && npm run build`.
+  단, **dev 서버가 떠 있는 채로 이 명령을 실행하지 말 것** — dev 서버와 빌드가 같은 `.next`를
+  공유해 캐시가 깨지고, 브라우저에 `Internal Server Error`가 뜬다. 검증 빌드는 dev 서버를
+  끄고(`lsof -ti:3000 | xargs kill`) 실행하거나, 브라우저 확인만 할 거면 dev 서버로 충분하다.
 
 ## 스택 버전 (버전 의존 동작이 있으므로 고정)
 
@@ -66,12 +69,19 @@ npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog,
   `nav-links.tsx`가 `usePathname`으로 활성 강조 / `mobile-nav.tsx`는 md 미만에서 Sheet 드로어 /
   `app-header.tsx`가 경로 기반 동적 브레드크럼). 반응형 전환은 CSS(`hidden md:flex`,
   `md:hidden`)로 처리하며 JS 미디어쿼리에 의존하지 않는다.
+  - **불변식**: `nav-config.ts`의 `mainNav`에 링크를 추가하면 반드시 대응하는 `page.tsx`도
+    만들어야 한다. 링크만 있고 페이지가 없으면 클릭 시 앱 셸까지 사라지는 전체 화면 404가 뜬다.
+    현재 `/dashboard`(+`analytics`·`documents`·`users` 서브 페이지)·`/settings`가 존재한다.
+    브레드크럼 라벨도 같은 파일의 `routeLabels`에 함께 등록한다.
 
 - **공통 훅은 직접 구현하지 말고 설치된 라이브러리를 쓴다.** `useMediaQuery`는 `usehooks-ts`,
   로컬스토리지 상태는 `use-local-storage-state`(탭 간 동기화·SSR 안전)를 사용한다.
   더 나은 대안이 없는 한 이 둘을 우선하고, 손수 훅을 작성하지 않는다.
 
 - **경로 alias `@/*` → `src/*`** (`tsconfig.json`). import는 상대경로 대신 alias를 쓴다.
+
+- **`my-app/`는 프로젝트 본체가 아니다.** 실수로 생성된 중첩 `create-next-app` 스캐폴드이며
+  `.gitignore` 처리되어 있다. 여기 안의 파일을 수정하거나 참조하지 말 것 — 실제 앱은 저장소 루트다.
 
 ## 클라이언트/서버 컴포넌트 경계
 
