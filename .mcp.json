@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "nx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "env": {}
+    }
+  }
+}

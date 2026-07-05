@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 실수로 생성된 중첩 스캐폴드 (프로젝트 본체 아님)
+/my-app/
