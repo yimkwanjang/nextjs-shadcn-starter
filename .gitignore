@@ -42,3 +42,6 @@ next-env.d.ts
 
 # 실수로 생성된 중첩 스캐폴드 (프로젝트 본체 아님)
 /my-app/
+
+# Claude Code 개인 로컬 설정 (공유하지 않음)
+.claude/settings.local.json
