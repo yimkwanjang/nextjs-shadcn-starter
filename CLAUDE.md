@@ -78,10 +78,38 @@ npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog,
   로컬스토리지 상태는 `use-local-storage-state`(탭 간 동기화·SSR 안전)를 사용한다.
   더 나은 대안이 없는 한 이 둘을 우선하고, 손수 훅을 작성하지 않는다.
 
+- **`middleware.ts`는 없다 — Next 16에서 `proxy.ts`로 개칭됐다.** 요청 전처리(인증 게이트,
+  리다이렉트, 헤더 조작)는 `src/proxy.ts`에 `export function proxy(request: NextRequest)`로 쓴다.
+  학습 데이터대로 `middleware.ts`를 만들면 **파일이 조용히 무시되어** 게이트가 아예 실행되지 않는다.
+  또한 공식 문서는 Proxy를 완전한 인가 수단으로 쓰지 말라고 명시한다 — 낙관적 검사만 하고
+  실제 권한 판정은 데이터 접근 계층에서 한 번 더 한다.
+  (근거: `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md`,
+  `middleware.ts → proxy.ts` codemod 제공)
+
+- **캐싱은 "이전 모델"을 쓴다.** `next.config.ts`에 `cacheComponents`가 **켜져 있지 않다.**
+  따라서 `use cache` / `cacheLife` / `cacheTag`는 **사용할 수 없다**(해당 플래그 전용 API).
+  대신 라우트 세그먼트 `export const revalidate`, `fetch(..., { next: { tags, revalidate } })`,
+  `unstable_cache`, `revalidateTag`를 쓴다. 외부 SDK(예: Notion 공식 SDK)는 Next가 패치한
+  `fetch`를 타지 않을 수 있으므로 `unstable_cache`로 감싸야 캐시가 실제로 걸린다.
+  근거 문서: `node_modules/next/dist/docs/01-app/02-guides/caching-without-cache-components.md`.
+  (`cacheComponents`를 켜기로 결정하면 `01-getting-started/08-caching.md`로 기준이 바뀐다.)
+  주의: **dev 서버는 페이지를 캐시하지 않는다** — 캐시·재검증 동작 검증은 `npm run build && npm run start`로만 가능하다.
+
 - **경로 alias `@/*` → `src/*`** (`tsconfig.json`). import는 상대경로 대신 alias를 쓴다.
 
 - **`my-app/`는 프로젝트 본체가 아니다.** 실수로 생성된 중첩 `create-next-app` 스캐폴드이며
   `.gitignore` 처리되어 있다. 여기 안의 파일을 수정하거나 참조하지 말 것 — 실제 앱은 저장소 루트다.
+
+## 저장소 자산과 문서 위치
+
+- **서브에이전트** (`.claude/agents/`)
+  - `code-reviewer` — 코드 작성·수정 직후 **자동 호출**한다. 읽기 전용이며 위 함정들을 우선 점검한다.
+  - `prd-generator` — PRD/요구사항 정의서 작성. 산출물은 `docs/` 아래 마크다운.
+- **슬래시 명령** (`.claude/commands/`): `/commit`, `/git:commit`
+- **문서 위치가 두 곳으로 갈려 있다.** `doc/`에는 `PRD_PROMPT.md`(메타 프롬프트), `docs/`에는
+  `PRD.md`(산출물)가 있다. 새 문서는 **`docs/`** 에 쓴다.
+- `docs/PRD.md` = 노션 견적서 웹 열람/PDF 다운로드 MVP의 요구사항 정의서. 이 저장소에서
+  실제로 무엇을 만들려는지가 여기 있으므로, 기능 구현 전에 먼저 읽는다.
 
 ## 클라이언트/서버 컴포넌트 경계
 
