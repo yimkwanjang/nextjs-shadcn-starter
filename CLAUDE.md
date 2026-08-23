@@ -110,6 +110,9 @@ npx shadcn@latest add <컴포넌트명>   # UI 컴포넌트 추가 (예: dialog,
   - `code-reviewer` — 코드 작성·수정 직후 **자동 호출**한다. 읽기 전용이며 위 함정들을 우선 점검한다.
   - `prd-generator` — PRD/요구사항 정의서 작성. 산출물은 `docs/` 아래 마크다운.
 - **슬래시 명령** (`.claude/commands/`): `/commit`, `/git:commit`
+- **MCP** (`.mcp.json`): Playwright MCP 서버(`@playwright/mcp`)가 설정돼 있다(브라우저 자동화/E2E
+  확인용). 단 `package.json`에는 아직 테스트 스크립트가 없다. 참고: 현재 `command`가 `nx`로
+  되어 있는데 표준은 `npx`이므로, 서버 기동이 안 되면 이 값부터 확인한다.
 - **문서 위치가 두 곳으로 갈려 있다.** `doc/`에는 `PRD_PROMPT.md`(메타 프롬프트), `docs/`에는
   `PRD.md`(산출물)가 있다. 새 문서는 **`docs/`** 에 쓴다.
 - `docs/PRD.md` = 노션 견적서 웹 열람/PDF 다운로드 MVP의 요구사항 정의서. 이 저장소에서

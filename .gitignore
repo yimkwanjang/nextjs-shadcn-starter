@@ -45,3 +45,9 @@ next-env.d.ts
 
 # Claude Code 개인 로컬 설정 (공유하지 않음)
 .claude/settings.local.json
+
+# Claude Code git worktree 내부 (저장소 복제본, 공유 안 함)
+.claude/worktrees/
+
+# Shrimp Task Manager 로컬 태스크 상태 (머신 종속 경로 포함)
+/shrimp_data/
