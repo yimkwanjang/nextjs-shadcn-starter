@@ -9,6 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 웹 개발을 빠르게 시작하기 위한 스타터 킷. 모든 스택은 각 공식문서의 최신 설치 가이드를 준수한다.
 
+## Project Context
+- PRD 문서: @docs/PRD.md
+- 개발 로드맵: @docs/ROADMAP.md
+
 ## 명령어
 
 ```bash
